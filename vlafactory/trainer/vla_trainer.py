@@ -90,7 +90,12 @@ class VLATrainer:
         num_epochs = self.args.get('num_train_epochs', 3)
         
         # Get collate function from dataset if available
-        collate_fn = getattr(self.train_dataset, 'collate_fn', None)
+        # Handle both regular datasets and Subset from random_split
+        dataset = self.train_dataset
+        if hasattr(dataset, 'dataset'):
+            # This is a Subset, get the underlying dataset
+            dataset = dataset.dataset
+        collate_fn = getattr(dataset, 'collate_fn', None)
         
         train_dataloader = DataLoader(
             self.train_dataset,
@@ -175,7 +180,12 @@ class VLATrainer:
         self.model.eval()
         
         batch_size = self.args.get('per_device_eval_batch_size', 8)
-        collate_fn = getattr(self.eval_dataset, 'collate_fn', None)
+        
+        # Handle both regular datasets and Subset from random_split
+        dataset = self.eval_dataset
+        if hasattr(dataset, 'dataset'):
+            dataset = dataset.dataset
+        collate_fn = getattr(dataset, 'collate_fn', None)
         
         eval_dataloader = DataLoader(
             self.eval_dataset,

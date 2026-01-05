@@ -144,7 +144,7 @@ class VLAModel(nn.Module):
             **kwargs: Additional arguments
             
         Returns:
-            Predicted actions
+            Predicted actions or None if no actions could be generated
         """
         with torch.no_grad():
             outputs = self.forward(
@@ -153,7 +153,7 @@ class VLAModel(nn.Module):
                 images=images,
                 **kwargs
             )
-        return outputs['action_logits']
+        return outputs.get('action_logits', None)
     
     @classmethod
     def from_pretrained(

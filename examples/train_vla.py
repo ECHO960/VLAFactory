@@ -8,6 +8,7 @@ This demonstrates the basic usage of VLAFactory components.
 import argparse
 import os
 import sys
+import torch
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -151,7 +152,6 @@ def main():
     print("=" * 60)
     
     try:
-        import torch
         metrics = trainer.train()
         
         print("\n" + "=" * 60)
@@ -175,11 +175,4 @@ def main():
     
 
 if __name__ == '__main__':
-    # Import torch here to avoid issues if not installed
-    try:
-        import torch
-        main()
-    except ImportError:
-        print("PyTorch is required to run this script.")
-        print("Please install it with: pip install torch")
-        sys.exit(1)
+    main()
