@@ -53,11 +53,13 @@ logs/
 wandb/
 runs/
 
-# Data
+# Data (ignore data directory but not vlafactory/data which contains code)
 data/
 *.json
 *.jsonl
 !examples/*.json
+!vlafactory/data/
+!vlafactory/configs/
 
 # Models
 *.bin
