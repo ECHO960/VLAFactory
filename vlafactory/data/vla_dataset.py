@@ -213,7 +213,9 @@ class VLADataset(Dataset):
             data.append(sample)
         
         if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            save_dir = os.path.dirname(save_path)
+            if save_dir:  # Only create directory if path has a directory component
+                os.makedirs(save_dir, exist_ok=True)
             with open(save_path, 'w') as f:
                 json.dump(data, f, indent=2)
             return save_path

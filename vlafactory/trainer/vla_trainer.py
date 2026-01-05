@@ -253,8 +253,9 @@ class VLATrainer:
         if self.model is None:
             raise ValueError("Model must be initialized before loading")
         
-        if hasattr(self.model, 'from_pretrained'):
-            self.model = self.model.from_pretrained(model_path)
+        # Check if model class has from_pretrained class method
+        if hasattr(self.model.__class__, 'from_pretrained'):
+            self.model = self.model.__class__.from_pretrained(model_path)
         else:
             state_dict_path = os.path.join(model_path, 'pytorch_model.bin')
             if os.path.exists(state_dict_path):
