@@ -1,6 +1,6 @@
 # VLAFactory
 
-A minimal framework for training Vision-Language-Action (VLA) models, built on top of [LlamaFactory](https://github.com/hiyouga/LlamaFactory).
+A minimal framework for training Vision-Language-Action (VLA) models, built on top of [Transformers](@TODO: add link here).
 
 ## Overview
 
