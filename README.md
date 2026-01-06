@@ -57,21 +57,10 @@ Create a JSON file with your VLA data:
 
 ### 2. Train a Model
 
-Using the example script:
+Using the example training script:
 
 ```bash
-python examples/train_vla.py \
-    --data_path data/vla_data.json \
-    --output_dir ./output \
-    --num_epochs 3 \
-    --batch_size 8 \
-    --action_dim 7
-```
-
-Or use dummy data for testing:
-
-```bash
-python examples/train_vla.py --use_dummy_data
+bash examples/train.sh
 ```
 
 ### 3. Use in Code
@@ -111,19 +100,19 @@ trainer.save_model("./output")
 
 ### Core Components
 
-1. **VLAModel** (`vlafactory/core/vla_model.py`)
+1. **VLAModel** (`src/vlafactory/core/vla_model.py`)
    - Wraps language models from LlamaFactory
    - Adds vision encoder support
    - Implements action prediction head
    - Handles multimodal fusion
 
-2. **VLADataset** (`vlafactory/data/vla_dataset.py`)
+2. **VLADataset** (`src/vlafactory/data/vla_dataset.py`)
    - Loads and preprocesses VLA data
    - Supports JSON/JSONL formats
    - Handles images, text, and actions
    - Provides efficient batching
 
-3. **VLATrainer** (`vlafactory/trainer/vla_trainer.py`)
+3. **VLATrainer** (`src/vlafactory/trainer/vla_trainer.py`)
    - Manages training loop
    - Compatible with LlamaFactory infrastructure
    - Supports evaluation and checkpointing
@@ -162,7 +151,7 @@ from vlafactory.configs import get_default_config, load_config
 config = get_default_config()
 
 # Or load from file
-config = load_config("config.json")
+config = load_config("examples/qwen3_vl_8b_sft.yaml")
 ```
 
 Example configuration:

@@ -4,13 +4,13 @@ set -x
 ############################
 # paths (user configurable)
 ############################
-LLAMA_FACTORY_DIR=./third_party/LLaMA-Factory
+LLAMA_FACTORY_DIR=../third_party/LLaMA-Factory
 LLAMA_FACTORY_TRAIN=${LLAMA_FACTORY_DIR}/src/train.py
 
 PYTORCH_KERNEL_CACHE_PATH=/opt/tiger/caches
 save_checkpoint_path=/opt/tiger/local_checkpoints
 MODEL_HDFS_PATH=hdfs://harunavaali/home/byte_search_general_ranking_us/chunhui.liu/models/Qwen3-VL-2B-Instruct
-JOB_CONFIG=examples/train_sft/config/qwen3_vl_8b_sft.yaml
+JOB_CONFIG=./qwen3_vl_8b_sft.yaml
 
 save_hdfs_dir=hdfs://harunava/home/byte_search_general_ranking_us/chunhui.liu/checkpoints
 checkpoint_subdir=KD-Test-Qwen3-VL-2B-Instruct
