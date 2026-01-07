@@ -1,0 +1,55 @@
+### model
+model_name_or_path: /opt/tiger/local_checkpoints/Qwen3-VL-2B-Instruct
+trust_remote_code: true
+image_size: 1155
+image_max_pixels: 262144
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+freeze_vision_tower: true
+freeze_multi_modal_projector: true
+freeze_language_model: false
+deepspeed: /opt/tiger/LLaMA-Factory/examples/deepspeed/ds_z3_config.json
+
+### dataset
+dataset: hdfs://harunava/home/byte_search_general_ranking_us/lisong.qiu/data_vlm_sft_en+similar_gpt_qd2reason_merged_text/part*
+template: qwen3_vl_nothink
+cutoff_len: 4096
+overwrite_cache: true
+preprocessing_num_workers: 16
+preprocessing_batch_size: 1
+buffer_size: 1024
+streaming: true
+
+# accelerator / dataloader behavior
+accelerator_config:
+  dispatch_batches: false
+
+### output
+output_dir: /opt/tiger/local_checkpoints
+logging_steps: 10
+save_steps: 1000
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: true
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 5.0e-6
+weight_decay: 1.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+ddp_timeout: 180000000
+max_steps: 35008
+
+### extra_sft_options
+en_only: true
+add_similar_lang: true
+label_field: label
+add_breaking_sft: true
+add_cot_sft: true
+is_reason_first: true

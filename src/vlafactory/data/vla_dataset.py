@@ -39,7 +39,7 @@ class VLADataset(Dataset):
         self.image_processor = image_processor
         self.max_length = max_length
         self.action_dim = action_dim
-        
+
         # Load data
         self.data = self._load_data(data_path)
         
@@ -185,44 +185,3 @@ class VLADataset(Dataset):
                 collated[key] = values
                 
         return collated
-    
-    @classmethod
-    def create_dummy_dataset(
-        cls,
-        num_samples: int = 100,
-        save_path: Optional[str] = None,
-    ) -> Union["VLADataset", str]:
-        """
-        Create a dummy dataset for testing.
-        
-        Args:
-            num_samples: Number of samples to generate
-            save_path: Optional path to save the dataset
-            
-        Returns:
-            VLADataset instance or path to saved dataset
-        """
-        import random
-        
-        data = []
-        for i in range(num_samples):
-            sample = {
-                'instruction': f'Pick up object {i} and move it to location {random.randint(1, 10)}',
-                'action': [random.random() for _ in range(7)],
-            }
-            data.append(sample)
-        
-        if save_path:
-            save_dir = os.path.dirname(save_path)
-            if save_dir:  # Only create directory if path has a directory component
-                os.makedirs(save_dir, exist_ok=True)
-            with open(save_path, 'w') as f:
-                json.dump(data, f, indent=2)
-            return save_path
-        else:
-            # Create temporary file
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-                json.dump(data, f, indent=2)
-                temp_path = f.name
-            return cls(temp_path)

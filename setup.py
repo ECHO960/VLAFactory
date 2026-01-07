@@ -11,7 +11,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ECHO960/VLAFactory",
-    packages=find_packages(),
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -31,6 +32,7 @@ setup(
         "accelerate>=0.20.0",
         "peft>=0.4.0",
         "trl>=0.4.7",
+        "omegaconf>=2.3.0",
     ],
     extras_require={
         "dev": [
