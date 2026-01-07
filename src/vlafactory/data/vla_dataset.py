@@ -39,7 +39,7 @@ class VLADataset(Dataset):
         self.image_processor = image_processor
         self.max_length = max_length
         self.action_dim = action_dim
-        
+
         # Load data
         self.data = self._load_data(data_path)
         
