@@ -23,7 +23,7 @@ class VLAModel(nn.Module):
         action_dim: Dimension of action space
         hidden_dim: Hidden dimension for projection layers
     """
-    
+
     def __init__(
         self,
         language_model: Optional[nn.Module] = None,
