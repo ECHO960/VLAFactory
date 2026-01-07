@@ -2,68 +2,52 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Tuple
 
-from transformers import PreTrainedTokenizerBase, TrainingArguments
+from transformers import TrainingArguments
 
 from vlafactory.train.sft.trainer import VLASFTTrainer
+from vlafactory.data import load_dataset
+from vlafactory.model import load_model
 
 
-def _build_training_args(
-    training_args: Optional[Union[TrainingArguments, Mapping[str, Any]]],
-) -> TrainingArguments:
-    if isinstance(training_args, TrainingArguments):
-        args = training_args
-    else:
-        args_dict: Dict[str, Any] = dict(training_args or {})
-        args_dict.setdefault("output_dir", "./output")
-        args_dict.setdefault("remove_unused_columns", False)
-        args_dict.setdefault("logging_steps", 10)
-        args = TrainingArguments(**args_dict)
-    if args.remove_unused_columns:
-        args.remove_unused_columns = False
-    return args
-
-
-def train_sft(
-    model: Any,
-    tokenizer: Optional[PreTrainedTokenizerBase],
-    train_dataset: Any,
-    eval_dataset: Optional[Any] = None,
-    training_args: Optional[Union[TrainingArguments, Mapping[str, Any]]] = None,
-    data_collator: Optional[Any] = None,
-    compute_metrics: Optional[Any] = None,
-    callbacks: Optional[Any] = None,
-    do_train: bool = True,
-    do_eval: bool = False,
-    resume_from_checkpoint: Optional[str] = None,
+def run_sft(
+    model_args: "ModelArguments",
+    data_args: "DataArguments",
+    training_args: "TrainingArguments",
 ) -> Tuple[VLASFTTrainer, Dict[str, Any]]:
-    """Run a minimal SFT training workflow for VLA models."""
+    """Run a minimal SFT workflow for VLA models."""
 
-    args = _build_training_args(training_args)
+    # build dataset and data loader
+    model = load_model(model_args, training_args)
+    datasets = load_dataset(data_args)
+
+    data_collator = getattr(datasets["train"], "collate_fn", None)
+    if data_collator is None:
+        data_collator = datasets.get("collator")
 
     trainer = VLASFTTrainer(
         model=model,
-        args=args,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
-        tokenizer=tokenizer,
+        args=training_args,
+        train_dataset=datasets["train"],
+        eval_dataset=datasets["eval"],
+        tokenizer=None,
         data_collator=data_collator,
-        compute_metrics=compute_metrics,
-        callbacks=callbacks,
+        compute_metrics=None,
+        callbacks=None,
     )
 
     metrics: Dict[str, Any] = {}
 
-    if do_train:
-        train_result = trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+    if training_args.do_train:
+        train_result = trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
         metrics.update(train_result.metrics)
         trainer.save_model()
         trainer.log_metrics("train", train_result.metrics)
         trainer.save_metrics("train", train_result.metrics)
         trainer.save_state()
 
-    if do_eval and eval_dataset is not None:
+    if training_args.do_eval and datasets["eval"] is not None:
         eval_metrics = trainer.evaluate()
         metrics.update({f"eval_{k}": v for k, v in eval_metrics.items()})
         trainer.log_metrics("eval", eval_metrics)

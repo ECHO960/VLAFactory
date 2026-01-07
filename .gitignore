@@ -58,7 +58,7 @@ data/
 *.json
 *.jsonl
 !examples/*.json
-!vlafactory/data/
+!src/vlafactory/data/
 !vlafactory/configs/
 
 # Models

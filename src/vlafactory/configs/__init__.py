@@ -1,4 +1,20 @@
-"""Default configuration for VLA training."""
+"""Default configuration and argument parsing for VLA training."""
+
+from __future__ import annotations
+
+from typing import Any, Dict, Iterable, Tuple, Union
+import os
+
+from transformers import HfArgumentParser
+
+from vlafactory.configs.hparams import (
+    DataArguments,
+    EvaluationArguments,
+    FinetuningArguments,
+    GeneratingArguments,
+    ModelArguments,
+    TrainingArguments,
+)
 
 DEFAULT_VLA_CONFIG = {
     # Model configuration
@@ -104,3 +120,72 @@ def save_config(config: dict, save_path: str):
     
     with open(save_path, 'w') as f:
         json.dump(config, f, indent=2)
+
+
+_TRAIN_ARGS = [ModelArguments, DataArguments, TrainingArguments, FinetuningArguments, GeneratingArguments]
+_TRAIN_CLS = Tuple[ModelArguments, DataArguments, TrainingArguments, FinetuningArguments, GeneratingArguments]
+_INFER_ARGS = [ModelArguments, DataArguments, FinetuningArguments, GeneratingArguments]
+_INFER_CLS = Tuple[ModelArguments, DataArguments, FinetuningArguments, GeneratingArguments]
+_EVAL_ARGS = [ModelArguments, DataArguments, EvaluationArguments, FinetuningArguments]
+_EVAL_CLS = Tuple[ModelArguments, DataArguments, EvaluationArguments, FinetuningArguments]
+
+
+def is_env_enabled(key: str) -> bool:
+    return os.getenv(key, "").lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_args(
+    parser: HfArgumentParser,
+    args: Union[Dict[str, Any], Iterable[str], None],
+    allow_extra_keys: bool = False,
+) -> Any:
+    if args is None:
+        if allow_extra_keys:
+            parsed, _ = parser.parse_args_into_dataclasses(return_remaining_strings=True)
+        else:
+            parsed = parser.parse_args_into_dataclasses()
+        return parsed
+
+    if isinstance(args, dict):
+        return parser.parse_dict(args, allow_extra_keys=allow_extra_keys)
+
+    if allow_extra_keys:
+        parsed, _ = parser.parse_args_into_dataclasses(list(args), return_remaining_strings=True)
+    else:
+        parsed = parser.parse_args_into_dataclasses(list(args))
+    return parsed
+
+
+def _parse_train_args(args: Union[Dict[str, Any], Iterable[str], None] = None) -> _TRAIN_CLS:
+    parser = HfArgumentParser(_TRAIN_ARGS)
+    allow_extra_keys = is_env_enabled("ALLOW_EXTRA_ARGS")
+    return _parse_args(parser, args, allow_extra_keys=allow_extra_keys)
+
+
+def _parse_infer_args(args: Union[Dict[str, Any], Iterable[str], None] = None) -> _INFER_CLS:
+    parser = HfArgumentParser(_INFER_ARGS)
+    allow_extra_keys = is_env_enabled("ALLOW_EXTRA_ARGS")
+    return _parse_args(parser, args, allow_extra_keys=allow_extra_keys)
+
+
+def _parse_eval_args(args: Union[Dict[str, Any], Iterable[str], None] = None) -> _EVAL_CLS:
+    parser = HfArgumentParser(_EVAL_ARGS)
+    allow_extra_keys = is_env_enabled("ALLOW_EXTRA_ARGS")
+    return _parse_args(parser, args, allow_extra_keys=allow_extra_keys)
+
+
+__all__ = [
+    "DEFAULT_VLA_CONFIG",
+    "get_default_config",
+    "load_config",
+    "save_config",
+    "_parse_train_args",
+    "_parse_infer_args",
+    "_parse_eval_args",
+    "DataArguments",
+    "EvaluationArguments",
+    "FinetuningArguments",
+    "GeneratingArguments",
+    "ModelArguments",
+    "TrainingArguments",
+]

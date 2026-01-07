@@ -32,6 +32,7 @@ setup(
         "accelerate>=0.20.0",
         "peft>=0.4.0",
         "trl>=0.4.7",
+        "omegaconf>=2.3.0",
     ],
     extras_require={
         "dev": [
