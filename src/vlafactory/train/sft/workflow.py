@@ -20,7 +20,7 @@ def run_sft(
 
     # build dataset and data loader
     model = load_model(model_args, training_args)
-    datasets = load_dataset(data_args)
+    datasets = load_dataset(data_args, model_args)
 
     data_collator = getattr(datasets["train"], "collate_fn", None)
     if data_collator is None:

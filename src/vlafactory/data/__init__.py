@@ -1,37 +1,77 @@
 """Data handling components for VLA training."""
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 import os
-import torch
 
-from vlafactory.data.vla_dataset import VLADataset
+from vlafactory.data.rlds.dataset import OXERLDSDataset, RLDSStreamConfig, SampleProcessingConfig
 
 
 def load_dataset(
     data_args: Any,
+    model_args: Any | None = None,
 ) -> Dict[str, Any]:
-    data_path = data_args.data_path
+    max_length = getattr(data_args, "max_length", None) or getattr(data_args, "cutoff_len", 512)
+    action_dim = getattr(model_args, "action_dim", 7) if model_args is not None else 7
 
-    max_length = data_args.max_length or data_args.cutoff_len
-    dataset = VLADataset(
-        data_path=data_path,
+    data_mix = getattr(data_args, "dataset", None)
+    eval_mix = getattr(data_args, "eval_dataset", None)
+
+    if data_mix is None:
+        raise ValueError("`dataset` must be provided for OXE RLDS training.")
+
+    mixture_spec = _normalize_mixture_spec(data_mix, getattr(data_args, "interleave_probs", None))
+    train_stream = RLDSStreamConfig(
+        data_root_dir=data_args.dataset_dir,
+        data_mix=mixture_spec,
+        train=True,
+    )
+    processing = SampleProcessingConfig(max_length=max_length, action_dim=action_dim)
+    train_dataset = OXERLDSDataset(
+        train_stream,
+        processing,
         tokenizer=None,
-        max_length=max_length,
-        action_dim=model_args.action_dim,
     )
-
-    train_split = getattr(data_args, "train_split", 0.9)
-    train_size = int(len(dataset) * train_split)
-    eval_size = len(dataset) - train_size
-    train_dataset, eval_dataset = torch.utils.data.random_split(
-        dataset, [train_size, eval_size]
-    )
-
+    eval_dataset = None
+    if eval_mix is not None:
+        eval_spec = _normalize_mixture_spec(eval_mix, getattr(data_args, "interleave_probs", None))
+        eval_stream = RLDSStreamConfig(
+            data_root_dir=data_args.dataset_dir,
+            data_mix=eval_spec,
+            train=False,
+        )
+        eval_dataset = OXERLDSDataset(
+            eval_stream,
+            processing,
+            tokenizer=None,
+        )
     return {
         "train": train_dataset,
-        "eval": eval_dataset if eval_size > 0 else None,
-        "collator": VLADataset.collate_fn,
+        "eval": eval_dataset,
+        "collator": OXERLDSDataset.collate_fn,
     }
 
 
-__all__ = ["VLADataset", "load_dataset"]
+def _normalize_mixture_spec(
+    dataset_names: Any,
+    interleave_probs: Any | None,
+) -> List[Tuple[str, float]] | str:
+    if isinstance(dataset_names, list):
+        names = dataset_names
+    elif isinstance(dataset_names, str):
+        names = [dataset_names]
+    else:
+        return dataset_names
+
+    if len(names) == 1:
+        return names[0]
+
+    if interleave_probs is None:
+        weights = [1.0] * len(names)
+    else:
+        weights = list(interleave_probs)
+        if len(weights) != len(names):
+            raise ValueError("interleave_probs must match the length of dataset.")
+    return list(zip(names, weights))
+
+
+__all__ = ["OXERLDSDataset", "load_dataset"]
